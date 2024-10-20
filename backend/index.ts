@@ -1,16 +1,18 @@
 import express, { Request, Response } from 'express';
 import zod from 'zod';
+import cors from 'cors';
 import Todo from './db';
 
 const app = express();
 app.use(express.json());
+app.use(cors({}));
 
 const todoSchema = zod.object({
   todo: zod.string(),
   completed: zod.boolean(),
 });
 
-app.post('/add-todo', async (req: Request, res: Response) => {
+app.post('/add-todo', async (req: Request, res: Response): Promise<any> => {
   const body = req.body;
   const zodSchema = todoSchema.safeParse(body);
   const { success } = zodSchema;
@@ -31,7 +33,7 @@ app.post('/add-todo', async (req: Request, res: Response) => {
   });
 });
 
-app.delete('/delete/:id', async (req: Request, res: Response) => {
+app.delete('/delete/:id', async (req: Request, res: Response): Promise<any> => {
   const id = req.params.id;
   try {
     const todo = await Todo.findByIdAndDelete(id);
@@ -43,6 +45,7 @@ app.delete('/delete/:id', async (req: Request, res: Response) => {
 
     return res.status(200).json({
       msg: 'Todo deleted successfully',
+      todo,
     });
   } catch (error) {
     return res.status(400).json({
@@ -51,7 +54,7 @@ app.delete('/delete/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/update/:id', async (req, res) => {
+app.post('/update/:id', async (req, res): Promise<any> => {
   const id = req.params.id;
   const status: boolean = req.body.status;
   try {
@@ -76,7 +79,7 @@ app.post('/update/:id', async (req, res) => {
   }
 });
 
-app.get('/', async (req: Request, res: Response) => {
+app.get('/', async (req: Request, res: Response): Promise<any> => {
   try {
     const todo = await Todo.find({});
     return res.status(200).json({
